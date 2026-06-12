@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+body {
+  @apply transition-colors duration-200 bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-slate-100 dark:bg-slate-900;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply rounded bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 dark:hover:bg-slate-600;
+}
+
+/* Custom styling for react-calendar to align with dark mode */
+.react-calendar {
+  width: 100% !important;
+  max-width: 100%;
+  background: white !important;
+  border: 1px solid var(--color-slate-200, #e2e8f0) !important;
+  font-family: inherit !important;
+  border-radius: 1rem !important;
+  padding: 1rem !important;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05) !important;
+}
+
+.dark .react-calendar {
+  background: var(--color-slate-900, #0f172a) !important;
+  border-color: var(--color-slate-800, #1e293b) !important;
+  color: var(--color-slate-100, #f1f5f9) !important;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3) !important;
+}
+
+.react-calendar__tile {
+  @apply py-3 text-sm font-medium rounded-lg transition-all duration-150;
+  height: 64px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+}
+
+.react-calendar__tile:hover {
+  @apply bg-slate-100 dark:bg-slate-800;
+}
+
+.react-calendar__tile--now {
+  @apply bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-500/30;
+}
+
+.react-calendar__tile--active {
+  @apply bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:text-white dark:hover:bg-indigo-600;
+}
+
+.react-calendar__month-view__weekdays {
+  @apply text-slate-500 dark:text-slate-400 font-bold text-xs uppercase mb-2 text-center;
+}
+
+.react-calendar__navigation button {
+  @apply min-w-[44px] h-[44px] font-bold text-lg rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-150;
+}
+
+.react-calendar__navigation button:disabled {
+  @apply opacity-30 cursor-not-allowed;
+}

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Exam Tracker Pro Popup</title>
+  <style>
+    body {
+      width: 350px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f8fafc;
+      color: #1e293b;
+    }
+    .header {
+      background: linear-gradient(135deg, #4f46e5, #6366f1);
+      color: white;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+    .header h1 {
+      font-size: 16px;
+      margin: 0;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+    .badge {
+      background-color: rgba(255, 255, 255, 0.2);
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .content {
+      padding: 16px;
+    }
+    .card {
+      background-color: white;
+      border: 1px border #e2e8f0;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    .card-meta {
+      font-size: 11px;
+      color: #64748b;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .type-badge {
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .type-govt {
+      background-color: #ecfdf5;
+      color: #059669;
+    }
+    .type-private {
+      background-color: #faf5ff;
+      color: #7c3aed;
+    }
+    .form-group {
+      margin-bottom: 12px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #475569;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    .btn {
+      width: 100%;
+      padding: 10px;
+      background-color: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+    }
+    .btn:hover {
+      background-color: #4338ca;
+    }
+    .btn-secondary {
+      background-color: #e2e8f0;
+      color: #475569;
+      margin-top: 8px;
+    }
+    .btn-secondary:hover {
+      background-color: #cbd5e1;
+    }
+    .hidden {
+      display: none !important;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 24px 12px;
+      color: #64748b;
+      font-size: 13px;
+    }
+    .error-msg {
+      color: #dc2626;
+      font-size: 11px;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Exam Tracker Pro</h1>
+    <span id="sync-status" class="badge">Offline</span>
+  </div>
+
+  <div class="content">
+    <!-- Login Screen -->
+    <div id="login-view" class="hidden">
+      <div style="text-align: center; margin-bottom: 16px;">
+        <h2 style="font-size: 15px; margin: 0 0 6px 0; color: #1e293b;">Login to Sync Exams</h2>
+        <p style="font-size: 11px; color: #64748b; margin: 0;">Access your exam tracker dashboard instantly.</p>
+      </div>
+      <div id="login-error" class="error-msg hidden"></div>
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="••••••••">
+      </div>
+      <button id="login-btn" class="btn">Login</button>
+    </div>
+
+    <!-- Main Extension View -->
+    <div id="main-view" class="hidden">
+      <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 10px; letter-spacing: 0.5px;">
+        Upcoming Exams (Next 7 Days)
+      </div>
+      <div id="exams-list">
+        <!-- Exams dynamically generated here -->
+      </div>
+      <button id="logout-btn" class="btn btn-secondary">Logout</button>
+    </div>
+  </div>
+
+  <!-- Load script -->
+  <script src="popup.js" type="module"></script>
+</body>
+</html>

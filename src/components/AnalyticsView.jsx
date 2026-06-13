@@ -20,7 +20,7 @@ export default function AnalyticsView({ exams = [] }) {
         <div className="p-4 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-full w-fit mx-auto">
           <PieChart size={36} />
         </div>
-        <h3 className="text-lg font-bold text-slate-850 dark:text-slate-100">No Data for Analytics</h3>
+        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">No Data for Analytics</h3>
         <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xs mx-auto leading-relaxed">
           Create some exam schedules with deadline and test dates to generate analytical insights.
         </p>
@@ -92,7 +92,7 @@ export default function AnalyticsView({ exams = [] }) {
               <PieChart size={14} />
               <span>Sector Distribution</span>
             </h3>
-            <p className="text-xs text-slate-550 dark:text-slate-450">Ratio of government vs private exams</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Ratio of government vs private exams</p>
           </div>
 
           <div className="space-y-4 py-2">
@@ -114,25 +114,25 @@ export default function AnalyticsView({ exams = [] }) {
             <div className="flex justify-between items-center text-xs">
               <div className="flex items-center space-x-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                <span className="font-semibold text-slate-700 dark:text-slate-350">Government Sector</span>
+                <span className="font-semibold text-slate-700 dark:text-slate-300">Government Sector</span>
               </div>
-              <span className="font-bold text-slate-850 dark:text-slate-200">{govtCount} ({govtPercent}%)</span>
+              <span className="font-bold text-slate-800 dark:text-slate-200">{govtCount} ({govtPercent}%)</span>
             </div>
             <div className="flex justify-between items-center text-xs">
               <div className="flex items-center space-x-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-purple-500" />
-                <span className="font-semibold text-slate-700 dark:text-slate-350">Private Sector</span>
+                <span className="font-semibold text-slate-700 dark:text-slate-300">Private Sector</span>
               </div>
-              <span className="font-bold text-slate-850 dark:text-slate-200">{privateCount} ({privatePercent}%)</span>
+              <span className="font-bold text-slate-800 dark:text-slate-200">{privateCount} ({privatePercent}%)</span>
             </div>
           </div>
 
-          <div className="bg-slate-50 dark:bg-slate-850 p-3.5 rounded-xl text-xs text-slate-650 dark:text-slate-350 flex items-start space-x-2 border border-slate-150 dark:border-slate-800">
+          <div className="bg-slate-50 dark:bg-slate-800/40 p-3.5 rounded-xl text-xs text-slate-600 dark:text-slate-300 flex items-start space-x-2 border border-slate-100 dark:border-slate-800/70">
             <TrendingUp size={14} className="text-indigo-500 dark:text-indigo-400 shrink-0 mt-0.5" />
             <span>
               {govtCount >= privateCount 
-                ? 'Your schedule is currently focused primary on Government Sector examinations.' 
-                : 'Your schedule is currently focused primary on Private Sector careers and tests.'}
+                ? 'Your schedule is currently focused primarily on Government Sector examinations.' 
+                : 'Your schedule is currently focused primarily on Private Sector careers and tests.'}
             </span>
           </div>
         </div>
@@ -146,7 +146,7 @@ export default function AnalyticsView({ exams = [] }) {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {/* Metric 1 */}
-            <div className="bg-slate-50 dark:bg-slate-850 border border-slate-150 dark:border-slate-800/60 p-4 rounded-xl space-y-2">
+            <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 p-4 rounded-xl space-y-2">
               <div className="flex items-center space-x-1 text-amber-500 dark:text-amber-400">
                 <Hourglass size={15} />
                 <span className="text-[10px] uppercase font-bold tracking-wider">Deadlines (3d)</span>
@@ -158,7 +158,7 @@ export default function AnalyticsView({ exams = [] }) {
             </div>
 
             {/* Metric 2 */}
-            <div className="bg-slate-50 dark:bg-slate-850 border border-slate-150 dark:border-slate-800/60 p-4 rounded-xl space-y-2">
+            <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 p-4 rounded-xl space-y-2">
               <div className="flex items-center space-x-1 text-red-500 dark:text-red-400">
                 <AlertCircle size={15} />
                 <span className="text-[10px] uppercase font-bold tracking-wider">Exams Today</span>
@@ -170,7 +170,7 @@ export default function AnalyticsView({ exams = [] }) {
             </div>
 
             {/* Metric 3 */}
-            <div className="bg-slate-50 dark:bg-slate-850 border border-slate-150 dark:border-slate-800/60 p-4 rounded-xl space-y-2">
+            <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 p-4 rounded-xl space-y-2">
               <div className="flex items-center space-x-1 text-indigo-500 dark:text-indigo-400">
                 <CalendarCheck size={15} />
                 <span className="text-[10px] uppercase font-bold tracking-wider">Upcoming Tests</span>
@@ -191,11 +191,11 @@ export default function AnalyticsView({ exams = [] }) {
             <TrendingUp size={14} />
             <span>Monthly Exam Load (Next 6 Months)</span>
           </h3>
-          <p className="text-xs text-slate-550 dark:text-slate-450">Concentration of test dates by month</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Concentration of test dates by month</p>
         </div>
 
         {/* Custom CSS Bar Chart */}
-        <div className="flex items-end justify-between gap-2 h-48 pt-6 px-2 sm:px-6 relative border-b border-slate-100 dark:border-slate-850">
+        <div className="flex items-end justify-between gap-2 h-48 pt-6 px-2 sm:px-6 relative border-b border-slate-100 dark:border-slate-800">
           {monthlyLoad.map((item, idx) => {
             const pct = (item.count / maxMonthlyCount) * 100;
             return (

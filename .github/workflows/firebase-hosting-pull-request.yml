@@ -30,7 +30,7 @@ jobs:
 
       - name: Run E2E Tests
         run: |
-          npm run dev &
+          npx vite --host 127.0.0.1 &
           npx wait-on http://127.0.0.1:5173 -t 30000
           npx playwright test
         env:

@@ -84,10 +84,11 @@ export const useExams = (userId: string | undefined, isDemo = false) => {
         userId,
         (fetchedExams) => {
           setExams((prev) => {
-            const pageSize = Math.max(10, prev.length);
-            return fetchedExams.slice(0, pageSize);
+            const currentSize = Math.max(10, prev.length);
+            const hasMoreDocs = fetchedExams.length > currentSize;
+            setHasMore(hasMoreDocs);
+            return fetchedExams.slice(0, currentSize);
           });
-          setHasMore(fetchedExams.length > exams.length);
         },
         (err) => {
           console.error("Real-time sync error:", err);
@@ -111,7 +112,9 @@ export const useExams = (userId: string | undefined, isDemo = false) => {
       return addExamDb(userId!, examData);
     },
     onSuccess: () => {
-      loadExams(true);
+      if (isDemo) {
+        loadExams(true);
+      }
     },
   });
 
@@ -123,7 +126,9 @@ export const useExams = (userId: string | undefined, isDemo = false) => {
       return updateExamDb(userId!, examId, examData);
     },
     onSuccess: () => {
-      loadExams(true);
+      if (isDemo) {
+        loadExams(true);
+      }
     },
   });
 
@@ -135,7 +140,9 @@ export const useExams = (userId: string | undefined, isDemo = false) => {
       return deleteExamDb(userId!, examId);
     },
     onSuccess: () => {
-      loadExams(true);
+      if (isDemo) {
+        loadExams(true);
+      }
     },
   });
 

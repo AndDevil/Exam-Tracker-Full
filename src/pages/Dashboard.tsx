@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useExams } from '../hooks/useExams';
@@ -15,6 +15,7 @@ import toast from 'react-hot-toast';
 export default function Dashboard() {
   const { user } = useAuth();
   const { exams, isLoading, hasMore, loadMore, deleteExam, addExam, updateExam } = useExams(user?.uid, user?.isDemo);
+  const rolloverInProgressRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (!isLoading && exams && exams.length > 0) {
@@ -22,8 +23,26 @@ export default function Dashboard() {
         checkAndTriggerLocalNotifications(exams);
       });
       
-      // Auto rollover passed recurring exams
-      checkAndRollOverRecurringExams(exams, addExam, updateExam);
+      // Auto rollover passed recurring exams with safety locks to prevent duplicate submissions
+      const todayStr = new Date().toISOString().split('T')[0];
+      const eligibleExams = exams.filter(exam => 
+        exam.isRecurring && 
+        exam.recurrenceRule && 
+        exam.examDate && 
+        exam.examDate < todayStr && 
+        !rolloverInProgressRef.current.has(exam.id!)
+      );
+
+      if (eligibleExams.length > 0) {
+        eligibleExams.forEach(exam => {
+          if (exam.id) {
+            rolloverInProgressRef.current.add(exam.id);
+          }
+        });
+        checkAndRollOverRecurringExams(eligibleExams, addExam, updateExam).catch((err) => {
+          console.error("Rollover failure:", err);
+        });
+      }
     }
   }, [isLoading, exams, addExam, updateExam]);
 

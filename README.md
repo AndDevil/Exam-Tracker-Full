@@ -42,6 +42,10 @@ Exam Tracker Pro is a production-ready, portfolio-worthy Progressive Web App (PW
 ---
 
 ### 2. Local Setup & Environment
+
+> [!IMPORTANT]
+> **Node.js Requirement**: This project uses Vite, which requires **Node.js version 20.19+ or 22.12+**. Please verify your active version (`node -v`) before proceeding.
+
 1. Clone the repository and navigate to the project root:
    ```bash
    cd "Exam Tracker Full"
@@ -65,7 +69,6 @@ Exam Tracker Pro is a production-ready, portfolio-worthy Progressive Web App (PW
    VITE_FIREBASE_MEASUREMENT_ID=G-ABCDE
    VITE_FIREBASE_VAPID_KEY=BM_long_vapid_public_key_string...
    ```
-5. Open `public/firebase-messaging-sw.js` and replace the placeholder fields inside the `firebase.initializeApp()` config block with the corresponding values from your `.env` file. (The critical value is `messagingSenderId` so the device registers background notifications correctly).
 
 ---
 
@@ -117,7 +120,28 @@ To build the static PWA assets and deploy the frontend to Firebase Hosting:
    ```bash
    firebase deploy --only hosting
    ```
-3. Once completed, the CLI will output your live Hosting URL (e.g. `https://exam-tracker-pro.web.app`).
+
+---
+
+### 6. Automated CI/CD (GitHub Actions)
+We have configured GitHub Action workflows under `.github/workflows/` to automatically build and deploy your application to Firebase Hosting.
+
+The pipeline is set up to run on **Node.js 20** runners and deploys directly using the raw Firebase CLI tools (`npx firebase-tools`) for maximum deployment reliability and verbose log tracking.
+
+To enable the automation pipeline:
+1. **Generate a Service Account Key**:
+   - Go to your Google Cloud Console / Firebase Console.
+   - Create a service account with the **Firebase Hosting Admin** role.
+   - Generate and download a **JSON Service Account Key**.
+2. **Add Secret to GitHub**:
+   - Go to your GitHub repository > **Settings** > **Secrets and variables** > **Actions**.
+   - Click **New repository secret**.
+   - Name the secret **`FIREBASE_SERVICE_ACCOUNT_EXAM_TRACKER_PRO_87B3D`**.
+   - Paste the complete contents of the downloaded JSON key file as the value.
+3. **Commit & Push Workflows**:
+   - Ensure the workflows located in `.github/workflows/` are committed and pushed to your GitHub repository.
+   
+Once added, any push to the `master` branch will trigger a production deployment, and any Pull Request will automatically deploy a preview channel URL!
 
 ---
 
@@ -132,3 +156,9 @@ match /users/{userId} {
   }
 }
 ```
+
+---
+
+## 📖 Deep-Dive Documentation
+For detailed information on the project architecture, design choices, file structure, and technical solutions (like secure PWA credential handling, Tailwind v4 class-based dark mode, and pipeline fixes), check out [ABOUT_THE_PROJECT.md](file:///c:/Users/Shrish/Downloads/Intern%20projects/Exam%20Tracker%20Full/ABOUT_THE_PROJECT.md) in the project root.
+

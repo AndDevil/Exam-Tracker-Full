@@ -39,3 +39,8 @@ ui-debug.log
 # Blog Post
 BLOG_POST.md
 blogpost.md
+
+# Test reports
+test-results/
+playwright-report/
+blob-report/

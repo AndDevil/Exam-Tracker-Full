@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useExams } from '../hooks/useExams';
@@ -6,16 +6,27 @@ import DashboardStats from '../components/DashboardStats';
 import FilterBar from '../components/FilterBar';
 import ExamCard from '../components/ExamCard';
 import { SkeletonStats, SkeletonCard } from '../components/LoadingSkeleton';
+import { requestNotificationPermission, checkAndTriggerLocalNotifications } from '../utils/localNotifications';
+import AnalyticsView from '../components/AnalyticsView';
 import { FolderPlus, BookOpen } from 'lucide-react';
 
 export default function Dashboard() {
   const { user } = useAuth();
   const { exams, isLoading, deleteExam } = useExams(user?.uid);
 
+  useEffect(() => {
+    if (!isLoading && exams && exams.length > 0) {
+      requestNotificationPermission().then(() => {
+        checkAndTriggerLocalNotifications(exams);
+      });
+    }
+  }, [isLoading, exams]);
+
   // Filter and Sort states
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('All');
   const [sortBy, setSortBy] = useState('examDate-asc');
+  const [activeTab, setActiveTab] = useState('cards');
 
   // Filter logic
   const filteredExams = exams.filter((exam) => {
@@ -94,56 +105,86 @@ export default function Dashboard() {
         </>
       ) : (
         <>
-          {/* Stats Summary */}
-          <DashboardStats exams={exams} />
+          {/* Tab Selector */}
+          <div className="flex border-b border-slate-200 dark:border-slate-800 space-x-6 text-sm mb-6">
+            <button
+              onClick={() => setActiveTab('cards')}
+              className={`pb-3 font-extrabold transition-all duration-200 border-b-2 cursor-pointer ${
+                activeTab === 'cards'
+                  ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-350'
+              }`}
+            >
+              📋 Exam Cards
+            </button>
+            <button
+              onClick={() => setActiveTab('analytics')}
+              className={`pb-3 font-extrabold transition-all duration-200 border-b-2 cursor-pointer ${
+                activeTab === 'analytics'
+                  ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-350'
+              }`}
+            >
+              📊 Analytics Insights
+            </button>
+          </div>
 
-          {/* Filtering and Search Controls */}
-          <FilterBar
-            search={search}
-            setSearch={setSearch}
-            typeFilter={typeFilter}
-            setTypeFilter={setTypeFilter}
-            sortBy={sortBy}
-            setSortBy={setSortBy}
-          />
+          {activeTab === 'cards' ? (
+            <>
+              {/* Stats Summary */}
+              <DashboardStats exams={exams} />
 
-          {/* Main Grid List */}
-          {sortedExams.length > 0 ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sortedExams.map((exam) => (
-                <ExamCard
-                  key={exam.id}
-                  exam={exam}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-12 text-center max-w-xl mx-auto shadow-sm space-y-5">
-              <div className="p-4 bg-indigo-550/10 text-indigo-500 dark:text-indigo-400 rounded-full w-fit mx-auto">
-                <BookOpen size={36} />
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-100">
-                  No exams found
-                </h3>
-                <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xs mx-auto leading-relaxed">
-                  {exams.length === 0
-                    ? "Start tracking your academic progress by creating your first exam schedule."
-                    : "No exams match your search criteria. Try adjusting your query."}
-                </p>
-              </div>
+              {/* Filtering and Search Controls */}
+              <FilterBar
+                search={search}
+                setSearch={setSearch}
+                typeFilter={typeFilter}
+                setTypeFilter={setTypeFilter}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+              />
 
-              {exams.length === 0 && (
-                <Link
-                  to="/exam/new"
-                  className="inline-flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition-all duration-150 shadow-md cursor-pointer"
-                >
-                  <FolderPlus size={16} />
-                  <span>Create First Exam</span>
-                </Link>
+              {/* Main Grid List */}
+              {sortedExams.length > 0 ? (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {sortedExams.map((exam) => (
+                    <ExamCard
+                      key={exam.id}
+                      exam={exam}
+                      onDelete={handleDelete}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-12 text-center max-w-xl mx-auto shadow-sm space-y-5">
+                  <div className="p-4 bg-indigo-550/10 text-indigo-500 dark:text-indigo-400 rounded-full w-fit mx-auto">
+                    <BookOpen size={36} />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-100">
+                      No exams found
+                    </h3>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xs mx-auto leading-relaxed">
+                      {exams.length === 0
+                        ? "Start tracking your academic progress by creating your first exam schedule."
+                        : "No exams match your search criteria. Try adjusting your query."}
+                    </p>
+                  </div>
+
+                  {exams.length === 0 && (
+                    <Link
+                      to="/exam/new"
+                      className="inline-flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition-all duration-150 shadow-md cursor-pointer"
+                    >
+                      <FolderPlus size={16} />
+                      <span>Create First Exam</span>
+                    </Link>
+                  )}
+                </div>
               )}
-            </div>
+            </>
+          ) : (
+            <AnalyticsView exams={exams} />
           )}
         </>
       )}

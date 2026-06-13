@@ -9,13 +9,29 @@ import {
   Settings, 
   Sun, 
   Moon, 
-  LogOut 
+  LogOut,
+  Wifi,
+  WifiOff
 } from 'lucide-react';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
+  const [isOnline, setIsOnline] = React.useState(navigator.onLine);
+
+  React.useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   if (!user) return null;
 
@@ -74,6 +90,18 @@ export default function Navbar() {
 
             {/* Profile & Controls (Theme, Logout) */}
             <div className="flex items-center space-x-3">
+              {/* Online/Offline Status Indicator */}
+              <div className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all duration-200 ${
+                isOnline 
+                  ? 'bg-emerald-50/50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200/50 dark:border-emerald-800/30' 
+                  : 'bg-amber-50/50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200/50 dark:border-amber-850 animate-pulse'
+              }`}
+              title={isOnline ? "All your edits are instantly synced with Firebase" : "Connection lost. Local edits are stored offline and will auto-sync on recovery."}
+              >
+                {isOnline ? <Wifi size={14} /> : <WifiOff size={14} />}
+                <span className="hidden md:inline">{isOnline ? 'Synced' : 'Offline'}</span>
+              </div>
+
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
@@ -120,10 +148,21 @@ export default function Navbar() {
           </span>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2">
+          {/* Mobile Offline Status Dot */}
+          <div className={`p-1.5 rounded-lg border transition-all duration-200 ${
+            isOnline 
+              ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
+              : 'bg-amber-500/10 text-amber-500 border-amber-500/20 animate-pulse'
+          }`}
+          title={isOnline ? 'Synced' : 'Working Offline'}
+          >
+            {isOnline ? <Wifi size={14} /> : <WifiOff size={14} />}
+          </div>
+
           <button
             onClick={toggleTheme}
-            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 cursor-pointer"
+            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-805 text-slate-500 dark:text-slate-400 cursor-pointer"
           >
             {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
           </button>

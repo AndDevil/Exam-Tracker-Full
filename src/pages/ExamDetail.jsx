@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useExams } from '../hooks/useExams';
 import { formatDate, getDaysCountdown } from '../utils/dateHelpers';
+import { getGoogleCalendarLink, downloadIcalFile } from '../utils/calendarExport';
 import { SkeletonDetail } from '../components/LoadingSkeleton';
 import { 
   ArrowLeft, 
@@ -159,10 +160,28 @@ export default function ExamDetail() {
                         </div>
 
                         {isScheduled && mCountdown && (
-                          <div className="sm:text-right mt-1 sm:mt-0">
+                          <div className="flex items-center space-x-2 sm:text-right mt-1 sm:mt-0">
                             <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider border ${mCountdown.colorClass}`}>
                               {mCountdown.label}
                             </span>
+                            <div className="flex items-center space-x-1 pl-2 border-l border-slate-200 dark:border-slate-800">
+                              <a
+                                href={getGoogleCalendarLink(exam, milestone)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md text-slate-400 hover:text-indigo-500 transition-colors"
+                                title="Add to Google Calendar"
+                              >
+                                <Calendar size={13} />
+                              </a>
+                              <button
+                                onClick={() => downloadIcalFile(exam, milestone)}
+                                className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md text-slate-400 hover:text-indigo-500 transition-colors cursor-pointer"
+                                title="Download iCal (.ics)"
+                              >
+                                <ExternalLink size={13} />
+                              </button>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -184,6 +203,32 @@ export default function ExamDetail() {
                   <ExternalLink size={14} />
                   <span>Go to Official Notification Website</span>
                 </a>
+              </div>
+            )}
+
+            {/* Calendar Export Section */}
+            {primaryMilestone && (
+              <div className="pt-4 border-t border-slate-100 dark:border-slate-850 space-y-3">
+                <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center space-x-1.5">
+                  <Calendar size={14} />
+                  <span>Calendar Synchronization</span>
+                </h4>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <a
+                    href={getGoogleCalendarLink(exam, primaryMilestone)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 inline-flex items-center space-x-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/20 dark:hover:bg-indigo-950/40 border border-indigo-200/50 dark:border-indigo-850 text-indigo-650 dark:text-indigo-400 font-bold py-2.5 px-4 rounded-xl text-xs transition-colors duration-150 justify-center"
+                  >
+                    <span>Sync Next Milestone to Google Calendar</span>
+                  </a>
+                  <button
+                    onClick={() => downloadIcalFile(exam, primaryMilestone)}
+                    className="flex-1 inline-flex items-center space-x-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-750 border border-slate-200 dark:border-slate-800 text-slate-750 dark:text-slate-350 font-bold py-2.5 px-4 rounded-xl text-xs transition-colors duration-150 justify-center cursor-pointer"
+                  >
+                    <span>Download iCal (.ics)</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>

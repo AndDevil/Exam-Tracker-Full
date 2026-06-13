@@ -1,13 +1,24 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { formatDate, getDaysCountdown } from '../utils/dateHelpers';
+import { downloadIcalFile } from '../utils/calendarExport';
 import { ExternalLink, Calendar, Hourglass, Landmark, Briefcase, Eye, Edit, Trash2 } from 'lucide-react';
 
 export default function ExamCard({ exam, onDelete }) {
-  const { id, name, type, formEnd, examDate, adUrl, notes } = exam;
+  const { id, name, type, formStart, formEnd, admitDate, examDate, adUrl, notes } = exam;
 
   const examCountdown = getDaysCountdown(examDate);
   const deadlineCountdown = getDaysCountdown(formEnd);
+
+  const upcomingMilestones = [
+    { label: 'Application Process Starts', date: formStart },
+    { label: 'Application Deadline', date: formEnd },
+    { label: 'Admit Card Available', date: admitDate },
+    { label: 'Exam Date', date: examDate }
+  ].filter(m => m.date && new Date(m.date) >= new Date().setHours(0,0,0,0))
+   .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  const nextMilestone = upcomingMilestones[0] || null;
 
   const handleDelete = (e) => {
     e.preventDefault();
@@ -18,6 +29,7 @@ export default function ExamCard({ exam, onDelete }) {
   };
 
   return (
+
     <div className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 hover:border-indigo-500/30 dark:hover:border-indigo-500/30 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between h-full relative overflow-hidden">
       {/* Decorative colored top border bar depending on exam type */}
       <div className={`absolute top-0 left-0 right-0 h-1 ${
@@ -120,6 +132,19 @@ export default function ExamCard({ exam, onDelete }) {
           <Eye size={14} />
           <span>View Details</span>
         </Link>
+        {nextMilestone && (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              downloadIcalFile(exam, nextMilestone);
+            }}
+            className="p-2.5 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 rounded-xl transition-all duration-150 cursor-pointer"
+            title={`Download iCal (.ics) for ${nextMilestone.label}`}
+          >
+            <Calendar size={14} />
+          </button>
+        )}
         {adUrl && (
           <a
             href={adUrl}

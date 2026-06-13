@@ -1,19 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { examSchema } from '../utils/validation';
 import { useAuth } from '../hooks/useAuth';
 import { useExams } from '../hooks/useExams';
-import { ArrowLeft, Landmark, Briefcase, Calendar, Link as LinkIcon, FileText, Sparkles } from 'lucide-react';
+import { ArrowLeft, Landmark, Briefcase, Calendar, Link as LinkIcon, FileText, Sparkles, RefreshCw } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function ExamForm() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const isEditMode = !!id;
   
-  const { exams, addExam, updateExam, isLoading } = useExams(user?.uid);
+  const { exams, addExam, updateExam, isLoading } = useExams(user?.uid, user?.isDemo);
   const [saveError, setSaveError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -29,19 +30,21 @@ export default function ExamForm() {
     resolver: zodResolver(examSchema),
     defaultValues: {
       name: '',
-      type: 'Government',
+      type: 'Government' as 'Government' | 'Private',
       formStart: '',
       formEnd: '',
       examDate: '',
       admitDate: '',
       adUrl: '',
-      notes: ''
+      notes: '',
+      isRecurring: false,
+      recurrenceRule: 'FREQ=MONTHLY'
     }
   });
 
   const selectedType = watch('type');
+  const watchIsRecurring = watch('isRecurring');
 
-  // Load current exam data if editing
   useEffect(() => {
     if (isEditMode && currentExam) {
       setValue('name', currentExam.name || '');
@@ -52,35 +55,46 @@ export default function ExamForm() {
       setValue('admitDate', currentExam.admitDate || '');
       setValue('adUrl', currentExam.adUrl || '');
       setValue('notes', currentExam.notes || '');
+      setValue('isRecurring', currentExam.isRecurring || false);
+      setValue('recurrenceRule', currentExam.recurrenceRule || 'FREQ=MONTHLY');
     }
   }, [isEditMode, currentExam, setValue]);
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: any) => {
     try {
       setSaveError('');
       setSubmitting(true);
 
-      // Clean empty fields to null for database
       const cleanedData = {
-        ...data,
+        name: data.name,
+        type: data.type,
         formStart: data.formStart || null,
         formEnd: data.formEnd || null,
         examDate: data.examDate || null,
         admitDate: data.admitDate || null,
         adUrl: data.adUrl || '',
-        notes: data.notes || ''
+        notes: data.notes || '',
+        isRecurring: data.isRecurring || false,
+        recurrenceRule: data.isRecurring ? data.recurrenceRule : ''
       };
 
-      if (isEditMode) {
+      if (user?.isDemo) {
+        toast.error('Guest Session: Local changes will not sync to database. Sign in to save permanently.');
+      }
+
+      if (isEditMode && id) {
         await updateExam({ examId: id, examData: cleanedData });
+        toast.success('Exam details updated.');
         navigate(`/exam/${id}`);
       } else {
         await addExam(cleanedData);
+        toast.success('New exam schedule created.');
         navigate('/');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setSaveError('An error occurred while saving. Please check your offline status.');
+      setSaveError(err.message || 'An error occurred while saving.');
+      toast.error('Failed to save exam schedule.');
     } finally {
       setSubmitting(false);
     }
@@ -96,7 +110,6 @@ export default function ExamForm() {
 
   return (
     <div className="max-w-2xl mx-auto pb-12">
-      {/* Back button */}
       <div className="mb-6">
         <Link
           to={isEditMode ? `/exam/${id}` : '/'}
@@ -107,7 +120,6 @@ export default function ExamForm() {
         </Link>
       </div>
 
-      {/* Main card */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6 md:p-8">
         <div className="flex items-center space-x-3 mb-6">
           <div className="p-3 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl">
@@ -118,7 +130,7 @@ export default function ExamForm() {
               {isEditMode ? 'Edit Exam Details' : 'Add New Exam Schedule'}
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Fill in all dates to enable push notification reminders and dashboard countdowns.
+              Fill in dates to enable notification reminders and countdowns.
             </p>
           </div>
         </div>
@@ -130,7 +142,6 @@ export default function ExamForm() {
         )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Exam Name */}
           <div className="space-y-1.5">
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Exam Name *
@@ -150,7 +161,6 @@ export default function ExamForm() {
             )}
           </div>
 
-          {/* Exam Type Toggle */}
           <div className="space-y-1.5">
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Exam Sector / Type *
@@ -183,9 +193,7 @@ export default function ExamForm() {
             </div>
           </div>
 
-          {/* Dates Grid */}
           <div className="bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-900 rounded-2xl p-5 grid md:grid-cols-2 gap-6">
-            {/* Form Start Date */}
             <div className="space-y-1.5">
               <label className="flex items-center space-x-1 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 <Calendar size={14} />
@@ -198,7 +206,6 @@ export default function ExamForm() {
               />
             </div>
 
-            {/* Form End Date */}
             <div className="space-y-1.5">
               <label className="flex items-center space-x-1 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 <Calendar size={14} />
@@ -218,7 +225,6 @@ export default function ExamForm() {
               )}
             </div>
 
-            {/* Admit Card Date */}
             <div className="space-y-1.5">
               <label className="flex items-center space-x-1 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 <Calendar size={14} />
@@ -231,7 +237,6 @@ export default function ExamForm() {
               />
             </div>
 
-            {/* Exam Date */}
             <div className="space-y-1.5">
               <label className="flex items-center space-x-1 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 <Calendar size={14} />
@@ -252,7 +257,41 @@ export default function ExamForm() {
             </div>
           </div>
 
-          {/* Advertisement URL */}
+          {/* Recurrence Rule Fields */}
+          <div className="space-y-3 p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800/80 rounded-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <RefreshCw size={16} className="text-indigo-500 dark:text-indigo-400 shrink-0" />
+                <div>
+                  <h4 className="text-sm font-bold text-slate-700 dark:text-slate-200">Recurring Schedule</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Automatically roll over dates when exam passes.</p>
+                </div>
+              </div>
+              <input
+                type="checkbox"
+                {...register('isRecurring')}
+                className="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 cursor-pointer"
+              />
+            </div>
+
+            {watchIsRecurring && (
+              <div className="space-y-1.5 pt-3 border-t border-slate-200 dark:border-slate-800">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Repeat Interval
+                </label>
+                <select
+                  {...register('recurrenceRule')}
+                  className="block w-full px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 dark:focus:border-indigo-400 rounded-xl text-sm focus:outline-none transition-colors"
+                >
+                  <option value="FREQ=DAILY">Daily</option>
+                  <option value="FREQ=WEEKLY">Weekly</option>
+                  <option value="FREQ=MONTHLY">Monthly</option>
+                  <option value="FREQ=YEARLY">Yearly</option>
+                </select>
+              </div>
+            )}
+          </div>
+
           <div className="space-y-1.5">
             <label className="flex items-center space-x-1 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               <LinkIcon size={14} />
@@ -273,14 +312,13 @@ export default function ExamForm() {
             )}
           </div>
 
-          {/* Notes */}
           <div className="space-y-1.5">
             <label className="flex items-center space-x-1 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               <FileText size={14} />
               <span>Additional Notes</span>
             </label>
             <textarea
-              rows="4"
+              rows={4}
               placeholder="e.g. syllabus details, preparation plans, documents needed..."
               {...register('notes')}
               className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 dark:focus:border-indigo-400 rounded-xl text-sm focus:outline-none transition-all duration-150 resize-y"
@@ -290,8 +328,7 @@ export default function ExamForm() {
             )}
           </div>
 
-          {/* Form Actions */}
-          <div className="flex space-x-4 pt-4 border-t border-slate-100 dark:border-slate-850">
+          <div className="flex space-x-4 pt-4 border-t border-slate-100 dark:border-slate-800">
             <button
               type="submit"
               disabled={submitting}

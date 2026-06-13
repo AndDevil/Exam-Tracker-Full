@@ -18,7 +18,7 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
-  const [isOnline, setIsOnline] = React.useState(navigator.onLine);
+  const [isOnline, setIsOnline] = React.useState<boolean>(navigator.onLine);
 
   React.useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -41,7 +41,7 @@ export default function Navbar() {
     { label: 'Settings', path: '/settings', icon: Settings },
   ];
 
-  const isActive = (path) => {
+  const isActive = (path: string) => {
     if (path === '/') {
       return location.pathname === '/';
     }
@@ -54,7 +54,6 @@ export default function Navbar() {
       <nav className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md transition-all duration-200 hidden sm:block">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            {/* Logo */}
             <div className="flex items-center">
               <Link to="/" className="flex items-center space-x-2.5">
                 <div className="p-2 bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-xl shadow-md text-white">
@@ -66,7 +65,6 @@ export default function Navbar() {
               </Link>
             </div>
 
-            {/* Middle Nav Items */}
             <div className="hidden sm:flex sm:space-x-4 sm:items-center">
               {navItems.map((item) => {
                 const Icon = item.icon;
@@ -88,21 +86,18 @@ export default function Navbar() {
               })}
             </div>
 
-            {/* Profile & Controls (Theme, Logout) */}
             <div className="flex items-center space-x-3">
-              {/* Online/Offline Status Indicator */}
               <div className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all duration-200 ${
                 isOnline 
                   ? 'bg-emerald-50/50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200/50 dark:border-emerald-800/30' 
-                  : 'bg-amber-50/50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200/50 dark:border-amber-850 animate-pulse'
+                  : 'bg-amber-50/50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200/50 dark:border-amber-800 animate-pulse'
               }`}
-              title={isOnline ? "All your edits are instantly synced with Firebase" : "Connection lost. Local edits are stored offline and will auto-sync on recovery."}
+              title={isOnline ? "All your edits are instantly synced" : "Offline mode: Data will auto-sync on recovery."}
               >
                 {isOnline ? <Wifi size={14} /> : <WifiOff size={14} />}
                 <span className="hidden md:inline">{isOnline ? 'Synced' : 'Offline'}</span>
               </div>
 
-              {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
                 className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-150 cursor-pointer"
@@ -111,20 +106,18 @@ export default function Navbar() {
                 {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
               </button>
 
-              {/* User Avatar & Info */}
               <div className="flex items-center space-x-2 pl-2 border-l border-slate-200 dark:border-slate-800">
                 <img
                   src={user.photoURL || 'https://via.placeholder.com/150'}
-                  alt={user.displayName}
+                  alt={user.displayName || 'User'}
                   className="w-8 h-8 rounded-full ring-2 ring-indigo-500/20"
                   referrerPolicy="no-referrer"
                 />
                 <span className="hidden md:block text-sm font-semibold max-w-[120px] truncate">
-                  {user.displayName}
+                  {user.displayName || 'Demo Guest'}
                 </span>
               </div>
 
-              {/* Logout Button */}
               <button
                 onClick={logout}
                 className="p-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors duration-150 cursor-pointer"
@@ -137,7 +130,7 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile Sticky Top Bar for Logo, Avatar, and Theme Toggle */}
+      {/* Mobile Sticky Top Bar */}
       <nav className="sm:hidden sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 py-3 flex justify-between items-center transition-all duration-200">
         <div className="flex items-center space-x-2">
           <div className="p-1.5 bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-lg text-white">
@@ -149,7 +142,6 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center space-x-2">
-          {/* Mobile Offline Status Dot */}
           <div className={`p-1.5 rounded-lg border transition-all duration-200 ${
             isOnline 
               ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
@@ -162,14 +154,14 @@ export default function Navbar() {
 
           <button
             onClick={toggleTheme}
-            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-805 text-slate-500 dark:text-slate-400 cursor-pointer"
+            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 cursor-pointer"
           >
             {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
           </button>
           
           <img
             src={user.photoURL || 'https://via.placeholder.com/150'}
-            alt={user.displayName}
+            alt={user.displayName || 'User'}
             className="w-7 h-7 rounded-full ring-2 ring-indigo-500/20"
             referrerPolicy="no-referrer"
           />
@@ -185,7 +177,7 @@ export default function Navbar() {
       </nav>
 
       {/* Mobile Bottom Navigation Bar */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-850 pb-safe shadow-lg">
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 pb-safe shadow-lg">
         <div className="flex justify-around items-center h-16">
           {navItems.map((item) => {
             const Icon = item.icon;

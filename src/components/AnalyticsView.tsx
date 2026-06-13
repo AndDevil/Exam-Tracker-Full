@@ -1,7 +1,4 @@
-import React from 'react';
 import { 
-  Landmark, 
-  Briefcase, 
   PieChart, 
   TrendingUp, 
   Hourglass,
@@ -9,9 +6,13 @@ import {
   ClipboardList,
   AlertCircle
 } from 'lucide-react';
-import { formatDate } from '../utils/dateHelpers';
+import { Exam } from '../types';
 
-export default function AnalyticsView({ exams = [] }) {
+interface AnalyticsViewProps {
+  exams?: Exam[];
+}
+
+export default function AnalyticsView({ exams = [] }: AnalyticsViewProps) {
   const total = exams.length;
   
   if (total === 0) {
@@ -35,7 +36,6 @@ export default function AnalyticsView({ exams = [] }) {
   const privatePercent = Math.round((privateCount / total) * 100);
 
   // 2. Urgent Milestone Metrics
-  const now = new Date();
   const todayStart = new Date().setHours(0,0,0,0);
   const threeDaysFromNow = new Date().getTime() + (3 * 24 * 60 * 60 * 1000);
 
@@ -50,8 +50,15 @@ export default function AnalyticsView({ exams = [] }) {
   const totalUpcomingTests = exams.filter(e => e.examDate && new Date(e.examDate).getTime() >= todayStart).length;
 
   // 3. Next 6 Months Load Distribution (Timeline Bar Chart)
-  const getNext6Months = () => {
-    const months = [];
+  interface MonthlyLoadItem {
+    monthIndex: number;
+    year: number;
+    label: string;
+    count: number;
+  }
+
+  const getNext6Months = (): MonthlyLoadItem[] => {
+    const months: MonthlyLoadItem[] = [];
     const date = new Date();
     for (let i = 0; i < 6; i++) {
       months.push({

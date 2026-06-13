@@ -123,10 +123,49 @@ To build the static PWA assets and deploy the frontend to Firebase Hosting:
 
 ---
 
-### 6. Automated CI/CD (GitHub Actions)
-We have configured GitHub Action workflows under `.github/workflows/` to automatically build and deploy your application to Firebase Hosting.
+### 6. Running Tests
+To run unit and end-to-end tests:
+1. **Unit & Integration Tests (Vitest)**:
+   ```bash
+   npm run test
+   ```
+2. **End-to-End Tests (Playwright)**:
+   Make sure you have installed the necessary browser binaries first:
+   ```bash
+   npx playwright install chromium
+   ```
+   Ensure the local dev server is running on port 5173, then execute:
+   ```bash
+   npm run test:e2e
+   ```
+3. **TypeScript Diagnostics**:
+   ```bash
+   npm run typecheck
+   ```
 
-The pipeline is set up to run on **Node.js 20** runners and deploys directly using the raw Firebase CLI tools (`npx firebase-tools`) for maximum deployment reliability and verbose log tracking.
+---
+
+### 7. Installing the Chrome Extension
+The project includes a Google Chrome extension under `/extension` that pulls upcoming milestones from your dashboard.
+1. Open Google Chrome and navigate to `chrome://extensions/`.
+2. Toggle the **Developer mode** switch in the top right.
+3. Click **Load unpacked** in the top left.
+4. Select the `/extension` directory in this project folder.
+5. Click the extension icon in your browser toolbar, log in with your account credentials, and view your next 7 days of milestones instantly.
+
+---
+
+### 8. Cloud Functions Email SMTP Configuration
+To enable email alerts if device push notifications fail, configure SMTP credentials for Nodemailer in your Cloud Functions run environment:
+- Set environment variables `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, and `SMTP_FROM`.
+- If SMTP variables are missing, the scheduled function will execute in **Simulation Mode** and output email alerts directly to the console log.
+
+---
+
+### 9. Automated CI/CD (GitHub Actions)
+We have configured GitHub Action workflows under `.github/workflows/` to automatically verify, test, build, and deploy your application to Firebase Hosting.
+
+The pipeline is set up to run on **Node.js 20** runners. It runs TypeScript checks, runs unit tests, runs E2E tests, and deploys directly using the raw Firebase CLI tools (`npx firebase-tools`) for maximum deployment reliability.
 
 To enable the automation pipeline:
 1. **Generate a Service Account Key**:

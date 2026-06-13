@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useExams } from '../hooks/useExams';
@@ -7,20 +7,25 @@ import FilterBar from '../components/FilterBar';
 import ExamCard from '../components/ExamCard';
 import { SkeletonStats, SkeletonCard } from '../components/LoadingSkeleton';
 import { requestNotificationPermission, checkAndTriggerLocalNotifications } from '../utils/localNotifications';
+import { checkAndRollOverRecurringExams } from '../utils/recurrence';
 import AnalyticsView from '../components/AnalyticsView';
 import { FolderPlus, BookOpen } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const { exams, isLoading, deleteExam } = useExams(user?.uid);
+  const { exams, isLoading, hasMore, loadMore, deleteExam, addExam, updateExam } = useExams(user?.uid, user?.isDemo);
 
   useEffect(() => {
     if (!isLoading && exams && exams.length > 0) {
       requestNotificationPermission().then(() => {
         checkAndTriggerLocalNotifications(exams);
       });
+      
+      // Auto rollover passed recurring exams
+      checkAndRollOverRecurringExams(exams, addExam, updateExam);
     }
-  }, [isLoading, exams]);
+  }, [isLoading, exams, addExam, updateExam]);
 
   // Filter and Sort states
   const [search, setSearch] = useState('');
@@ -40,41 +45,43 @@ export default function Dashboard() {
   });
 
   // Sorting logic
-  const sortedExams = [...filteredExams].sort((a, b) => {
+  const sortedExams = [...filteredExams].sort((a: any, b: any) => {
     if (sortBy === 'name-asc') {
       return a.name.localeCompare(b.name);
     }
     
     if (sortBy === 'createdAt-desc') {
-      // Compare firestore timestamps or timestamps in strings
       const aTime = a.createdAt ? (a.createdAt.seconds || new Date(a.createdAt).getTime()) : 0;
       const bTime = b.createdAt ? (b.createdAt.seconds || new Date(b.createdAt).getTime()) : 0;
       return bTime - aTime;
     }
 
-    // Sort by dates
-    const dateField = sortBy.split('-')[0]; // 'examDate' or 'formEnd'
+    const dateField = sortBy.split('-')[0];
     const dateA = a[dateField];
     const dateB = b[dateField];
 
     if (!dateA && !dateB) return 0;
-    if (!dateA) return 1; // Put records with no date at the bottom
+    if (!dateA) return 1;
     if (!dateB) return -1;
 
-    return new Date(dateA) - new Date(dateB);
+    return new Date(dateA).getTime() - new Date(dateB).getTime();
   });
 
-  const handleDelete = async (examId) => {
+  const handleDelete = async (examId: string) => {
     try {
+      if (user?.isDemo) {
+        toast.error('Guest Session: Local mutations will not sync to remote servers. Sign in to save permanently.');
+      }
       await deleteExam(examId);
-    } catch (err) {
+      toast.success('Exam schedule deleted successfully.');
+    } catch (err: any) {
       console.error("Failed to delete exam:", err);
+      toast.error(err.message || 'Failed to delete exam. Please try again.');
     }
   };
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Dashboard Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-800 dark:text-slate-100">
@@ -82,6 +89,7 @@ export default function Dashboard() {
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
             Keep track of your exam applications and dates.
+            {user?.isDemo && <span className="text-indigo-500 font-bold ml-1.5">(Guest Demo Active)</span>}
           </p>
         </div>
 
@@ -94,7 +102,7 @@ export default function Dashboard() {
         </Link>
       </div>
 
-      {isLoading ? (
+      {isLoading && exams.length === 0 ? (
         <>
           <SkeletonStats />
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -105,7 +113,6 @@ export default function Dashboard() {
         </>
       ) : (
         <>
-          {/* Tab Selector */}
           <div className="flex border-b border-slate-200 dark:border-slate-800 space-x-6 text-sm mb-6">
             <button
               onClick={() => setActiveTab('cards')}
@@ -131,10 +138,8 @@ export default function Dashboard() {
 
           {activeTab === 'cards' ? (
             <>
-              {/* Stats Summary */}
               <DashboardStats exams={exams} />
 
-              {/* Filtering and Search Controls */}
               <FilterBar
                 search={search}
                 setSearch={setSearch}
@@ -144,16 +149,28 @@ export default function Dashboard() {
                 setSortBy={setSortBy}
               />
 
-              {/* Main Grid List */}
               {sortedExams.length > 0 ? (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {sortedExams.map((exam) => (
-                    <ExamCard
-                      key={exam.id}
-                      exam={exam}
-                      onDelete={handleDelete}
-                    />
-                  ))}
+                <div className="space-y-6">
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {sortedExams.map((exam) => (
+                      <ExamCard
+                        key={exam.id}
+                        exam={exam}
+                        onDelete={handleDelete}
+                      />
+                    ))}
+                  </div>
+
+                  {hasMore && (
+                    <div className="flex justify-center pt-4">
+                      <button
+                        onClick={loadMore}
+                        className="inline-flex items-center justify-center space-x-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-indigo-600 dark:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 font-bold py-2.5 px-6 rounded-xl text-sm transition-all duration-150 cursor-pointer shadow-sm"
+                      >
+                        <span>Load More Exams</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-12 text-center max-w-xl mx-auto shadow-sm space-y-5">

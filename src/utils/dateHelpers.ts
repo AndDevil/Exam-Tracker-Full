@@ -1,10 +1,6 @@
 import { differenceInCalendarDays, parseISO, format, startOfDay } from 'date-fns';
 
-/**
- * Format an ISO date string into a reader-friendly format.
- * Example: "2026-06-12" -> "Jun 12, 2026"
- */
-export const formatDate = (dateString) => {
+export const formatDate = (dateString: string | null | undefined): string => {
   if (!dateString) return 'Not scheduled';
   try {
     return format(parseISO(dateString), 'MMM dd, yyyy');
@@ -13,10 +9,15 @@ export const formatDate = (dateString) => {
   }
 };
 
-/**
- * Get details about the countdown to a specific target date string.
- */
-export const getDaysCountdown = (dateString) => {
+export interface CountdownDetails {
+  label: string;
+  isUrgent: boolean;
+  isExpired: boolean;
+  days: number;
+  colorClass: string;
+}
+
+export const getDaysCountdown = (dateString: string | null | undefined): CountdownDetails | null => {
   if (!dateString) return null;
   try {
     const targetDate = startOfDay(parseISO(dateString));

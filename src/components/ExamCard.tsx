@@ -2,10 +2,16 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { formatDate, getDaysCountdown } from '../utils/dateHelpers';
 import { downloadIcalFile } from '../utils/calendarExport';
-import { ExternalLink, Calendar, Hourglass, Landmark, Briefcase, Eye, Edit, Trash2 } from 'lucide-react';
+import { ExternalLink, Calendar, Hourglass, Landmark, Briefcase, Eye, Edit, Trash2, RefreshCw } from 'lucide-react';
+import { Exam } from '../types';
 
-export default function ExamCard({ exam, onDelete }) {
-  const { id, name, type, formStart, formEnd, admitDate, examDate, adUrl, notes } = exam;
+interface ExamCardProps {
+  exam: Exam;
+  onDelete: (id: string) => void;
+}
+
+export default function ExamCard({ exam, onDelete }: ExamCardProps) {
+  const { id, name, type, formStart, formEnd, admitDate, examDate, adUrl, notes, isRecurring } = exam;
 
   const examCountdown = getDaysCountdown(examDate);
   const deadlineCountdown = getDaysCountdown(formEnd);
@@ -15,23 +21,21 @@ export default function ExamCard({ exam, onDelete }) {
     { label: 'Application Deadline', date: formEnd },
     { label: 'Admit Card Available', date: admitDate },
     { label: 'Exam Date', date: examDate }
-  ].filter(m => m.date && new Date(m.date) >= new Date().setHours(0,0,0,0))
-   .sort((a, b) => new Date(a.date) - new Date(b.date));
+  ].filter((m): m is { label: string; date: string } => !!m.date && new Date(m.date).getTime() >= new Date().setHours(0,0,0,0))
+   .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   const nextMilestone = upcomingMilestones[0] || null;
 
-  const handleDelete = (e) => {
+  const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (window.confirm(`Are you sure you want to delete "${name}"?`)) {
+    if (id) {
       onDelete(id);
     }
   };
 
   return (
-
     <div className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 hover:border-indigo-500/30 dark:hover:border-indigo-500/30 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between h-full relative overflow-hidden">
-      {/* Decorative colored top border bar depending on exam type */}
       <div className={`absolute top-0 left-0 right-0 h-1 ${
         type === 'Government' 
           ? 'bg-gradient-to-r from-emerald-500 to-teal-400' 
@@ -39,25 +43,30 @@ export default function ExamCard({ exam, onDelete }) {
       }`} />
 
       <div className="space-y-4">
-        {/* Card Header */}
         <div className="flex justify-between items-start">
-          <div className="space-y-1 max-w-[70%]">
+          <div className="space-y-1.5 max-w-[70%]">
             <h3 className="font-bold text-lg leading-tight tracking-tight text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-150 truncate" title={name}>
               {name}
             </h3>
             
-            {/* Tag */}
-            <span className={`inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
-              type === 'Government'
-                ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                : 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400'
-            }`}>
-              {type === 'Government' ? <Landmark size={10} /> : <Briefcase size={10} />}
-              <span>{type}</span>
-            </span>
+            <div className="flex items-center space-x-1.5">
+              <span className={`inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                type === 'Government'
+                  ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                  : 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400'
+              }`}>
+                {type === 'Government' ? <Landmark size={10} /> : <Briefcase size={10} />}
+                <span>{type}</span>
+              </span>
+
+              {isRecurring && (
+                <span className="p-1 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-full border border-indigo-200/20" title="Recurring Event">
+                  <RefreshCw size={10} className="animate-spin-slow" />
+                </span>
+              )}
+            </div>
           </div>
 
-          {/* Quick Action Icons */}
           <div className="flex space-x-1">
             <Link
               to={`/exam/edit/${id}`}
@@ -76,23 +85,20 @@ export default function ExamCard({ exam, onDelete }) {
           </div>
         </div>
 
-        {/* Notes Snippet */}
         {notes && (
           <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
             {notes}
           </p>
         )}
 
-        {/* Date Indicators */}
-        <div className="space-y-2.5 pt-3 border-t border-slate-100 dark:border-slate-850">
-          {/* Form Deadline */}
+        <div className="space-y-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center space-x-1.5 text-slate-500 dark:text-slate-400 font-semibold">
               <Hourglass size={14} className="shrink-0" />
               <span>Apply Deadline:</span>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-slate-700 dark:text-slate-350 font-bold">
+              <span className="text-slate-700 dark:text-slate-300 font-bold">
                 {formatDate(formEnd)}
               </span>
               {deadlineCountdown && (
@@ -103,14 +109,13 @@ export default function ExamCard({ exam, onDelete }) {
             </div>
           </div>
 
-          {/* Exam Date */}
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center space-x-1.5 text-slate-500 dark:text-slate-400 font-semibold">
               <Calendar size={14} className="shrink-0" />
               <span>Exam Date:</span>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-slate-700 dark:text-slate-350 font-bold">
+              <span className="text-slate-700 dark:text-slate-300 font-bold">
                 {formatDate(examDate)}
               </span>
               {examCountdown && (
@@ -123,7 +128,6 @@ export default function ExamCard({ exam, onDelete }) {
         </div>
       </div>
 
-      {/* Action Buttons */}
       <div className="flex items-center space-x-2 mt-5">
         <Link
           to={`/exam/${id}`}

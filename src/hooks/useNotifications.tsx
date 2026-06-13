@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { requestAndRegisterToken, unregisterToken } from '../services/notificationService';
 
-export const useNotifications = (userId) => {
-  const [permission, setPermission] = useState(() => {
+export const useNotifications = (userId: string | undefined) => {
+  const [permission, setPermission] = useState<NotificationPermission>(() => {
     if (typeof window !== 'undefined' && 'Notification' in window) {
       return Notification.permission;
     }
     return 'default';
   });
-  const [token, setToken] = useState(() => localStorage.getItem('fcm_token') || '');
+  const [token, setToken] = useState<string>(() => localStorage.getItem('fcm_token') || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -25,7 +25,7 @@ export const useNotifications = (userId) => {
         return registeredToken;
       }
       return null;
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message || 'Notification registration failed.');
       throw err;
     } finally {
@@ -40,7 +40,7 @@ export const useNotifications = (userId) => {
       await unregisterToken(userId, token);
       setToken('');
       localStorage.removeItem('fcm_token');
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message || 'Failed to remove notification token.');
     } finally {
       setLoading(false);

@@ -1,9 +1,7 @@
 import { formatDate } from './dateHelpers';
+import { Exam } from '../types';
 
-/**
- * Requests browser permission to show desktop notifications.
- */
-export const requestNotificationPermission = async () => {
+export const requestNotificationPermission = async (): Promise<NotificationPermission | 'unsupported'> => {
   if (!('Notification' in window)) {
     console.warn('This browser does not support desktop notifications');
     return 'unsupported';
@@ -22,14 +20,8 @@ export const requestNotificationPermission = async () => {
   return Notification.permission;
 };
 
-/**
- * Scans exams for milestones occurring within the next 48 hours and displays browser alerts.
- * Saves alert history to localStorage to prevent duplicate popups.
- */
-export const checkAndTriggerLocalNotifications = async (exams = []) => {
+export const checkAndTriggerLocalNotifications = async (exams: Exam[] = []): Promise<void> => {
   if (!('Notification' in window)) return;
-  
-  // Only proceed if permission has been granted
   if (Notification.permission !== 'granted') return;
 
   const now = new Date();
@@ -48,7 +40,6 @@ export const checkAndTriggerLocalNotifications = async (exams = []) => {
       if (!m.date) return;
       
       const milestoneDate = new Date(m.date);
-      // Diff in hours
       const diffTime = milestoneDate.getTime() - now.getTime();
       const diffHours = diffTime / (1000 * 60 * 60);
 
@@ -61,7 +52,7 @@ export const checkAndTriggerLocalNotifications = async (exams = []) => {
           const daysLeft = Math.ceil(diffHours / 24);
           const timeText = daysLeft === 1 ? 'tomorrow' : `in ${daysLeft} days`;
           
-          const options = {
+          const options: NotificationOptions = {
             body: `${m.label} is ${timeText} (${formatDate(m.date)})!`,
             icon: '/favicon.svg',
             badge: '/favicon.svg',

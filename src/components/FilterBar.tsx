@@ -1,5 +1,13 @@
-import React from 'react';
 import { Search, ArrowUpDown } from 'lucide-react';
+
+interface FilterBarProps {
+  search: string;
+  setSearch: (val: string) => void;
+  typeFilter: string;
+  setTypeFilter: (val: string) => void;
+  sortBy: string;
+  setSortBy: (val: string) => void;
+}
 
 export default function FilterBar({
   search,
@@ -8,10 +16,9 @@ export default function FilterBar({
   setTypeFilter,
   sortBy,
   setSortBy
-}) {
+}: FilterBarProps) {
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl mb-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-      {/* Search Input */}
       <div className="relative flex-1">
         <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
           <Search size={18} />
@@ -25,9 +32,7 @@ export default function FilterBar({
         />
       </div>
 
-      {/* Toggles and Sorters */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-        {/* Type Filter Tab Group */}
         <div className="flex bg-slate-50 dark:bg-slate-950 p-1 border border-slate-200 dark:border-slate-800 rounded-xl">
           {['All', 'Government', 'Private'].map((type) => (
             <button
@@ -44,7 +49,6 @@ export default function FilterBar({
           ))}
         </div>
 
-        {/* Sort Select */}
         <div className="relative flex items-center">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
             <ArrowUpDown size={15} />
@@ -59,7 +63,6 @@ export default function FilterBar({
             <option value="name-asc">Name (A-Z)</option>
             <option value="createdAt-desc">Recently Added</option>
           </select>
-          {/* Custom dropdown arrow */}
           <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-500 dark:border-t-slate-400"></div>
         </div>
       </div>

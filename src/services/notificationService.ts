@@ -2,10 +2,11 @@ import { messaging, db, app } from './firebase';
 import { getToken } from 'firebase/messaging';
 import { doc, setDoc, deleteDoc } from 'firebase/firestore';
 
-/**
- * Request notification permissions and register token.
- */
-export const requestAndRegisterToken = async (userId) => {
+export const requestAndRegisterToken = async (userId: string): Promise<string | null> => {
+  if (userId === 'demo-user') {
+    return 'demo-fcm-token-12345';
+  }
+
   if (!messaging) {
     console.warn("FCM Messaging is not supported or initialized on this client.");
     return null;
@@ -17,7 +18,7 @@ export const requestAndRegisterToken = async (userId) => {
       throw new Error('Notification permission denied by user.');
     }
 
-    const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY;
+    const vapidKey = (import.meta as any).env.VITE_FIREBASE_VAPID_KEY;
     if (!vapidKey) {
       console.warn("VITE_FIREBASE_VAPID_KEY is missing from environment. Cannot register FCM.");
       return null;
@@ -25,18 +26,17 @@ export const requestAndRegisterToken = async (userId) => {
 
     const config = app.options;
     const registration = await navigator.serviceWorker.register(
-      `/firebase-messaging-sw.js?apiKey=${encodeURIComponent(config.apiKey)}` +
-      `&authDomain=${encodeURIComponent(config.authDomain)}` +
-      `&projectId=${encodeURIComponent(config.projectId)}` +
+      `/firebase-messaging-sw.js?apiKey=${encodeURIComponent(config.apiKey || '')}` +
+      `&authDomain=${encodeURIComponent(config.authDomain || '')}` +
+      `&projectId=${encodeURIComponent(config.projectId || '')}` +
       `&storageBucket=${encodeURIComponent(config.storageBucket || '')}` +
-      `&messagingSenderId=${encodeURIComponent(config.messagingSenderId)}` +
-      `&appId=${encodeURIComponent(config.appId)}`
+      `&messagingSenderId=${encodeURIComponent(config.messagingSenderId || '')}` +
+      `&appId=${encodeURIComponent(config.appId || '')}`
     );
 
     const token = await getToken(messaging, { serviceWorkerRegistration: registration, vapidKey });
     
     if (token) {
-      // Store token under users/{userId}/tokens/{token}
       const tokenDocRef = doc(db, 'users', userId, 'tokens', token);
       await setDoc(tokenDocRef, {
         token,
@@ -54,11 +54,8 @@ export const requestAndRegisterToken = async (userId) => {
   }
 };
 
-/**
- * Delete a registration token (for example, on logout or when disabling permissions).
- */
-export const unregisterToken = async (userId, token) => {
-  if (!token) return;
+export const unregisterToken = async (userId: string, token: string): Promise<void> => {
+  if (!token || userId === 'demo-user') return;
   try {
     const tokenDocRef = doc(db, 'users', userId, 'tokens', token);
     await deleteDoc(tokenDocRef);

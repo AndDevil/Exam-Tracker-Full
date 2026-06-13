@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { useAuth } from '../hooks/useAuth';
@@ -6,19 +6,25 @@ import { useExams } from '../hooks/useExams';
 import { Link } from 'react-router-dom';
 import { Calendar as CalendarIcon, Landmark, Briefcase, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
+import { Exam } from '../types';
+
+interface CalendarEvent {
+  exam: Exam;
+  type: string;
+  label: string;
+  color: string;
+}
 
 export default function CalendarPage() {
   const { user } = useAuth();
-  const { exams, isLoading } = useExams(user?.uid);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const { exams, isLoading } = useExams(user?.uid, user?.isDemo);
+  const [selectedDate, setSelectedDate] = useState<any>(new Date());
 
-  // Helper to get events for a specific Date object
-  const getEventsForDate = (date) => {
+  const getEventsForDate = (date: Date | null): CalendarEvent[] => {
     if (!date) return [];
     
-    // Normalize date to YYYY-MM-DD
     const dateStr = format(date, 'yyyy-MM-dd');
-    const events = [];
+    const events: CalendarEvent[] = [];
 
     exams.forEach((exam) => {
       if (exam.formStart === dateStr) {
@@ -40,8 +46,7 @@ export default function CalendarPage() {
 
   const selectedDateEvents = getEventsForDate(selectedDate);
 
-  // Custom tile renderer to inject colored dots for events
-  const renderTileContent = ({ date, view }) => {
+  const renderTileContent = ({ date, view }: { date: Date; view: string }) => {
     if (view !== 'month') return null;
     
     const events = getEventsForDate(date);
@@ -85,10 +90,8 @@ export default function CalendarPage() {
         </p>
       </div>
 
-      {/* Main Grid: Left Calendar, Right Date Detail */}
       <div className="grid md:grid-cols-12 gap-8 items-start">
-        {/* Calendar Card (Left) */}
-        <div className="md:col-span-7 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 p-5 rounded-2xl shadow-sm">
+        <div className="md:col-span-7 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
           <Calendar
             onChange={setSelectedDate}
             value={selectedDate}
@@ -96,7 +99,6 @@ export default function CalendarPage() {
             className="w-full border-0 shadow-none dark:bg-transparent"
           />
 
-          {/* Color Code Legend */}
           <div className="flex flex-wrap gap-4 mt-6 pt-5 border-t border-slate-100 dark:border-slate-850 justify-center">
             <div className="flex items-center space-x-2 text-xs">
               <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 shrink-0" />
@@ -117,8 +119,7 @@ export default function CalendarPage() {
           </div>
         </div>
 
-        {/* Date Events sidebar (Right) */}
-        <div className="md:col-span-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 p-6 rounded-2xl shadow-sm space-y-4">
+        <div className="md:col-span-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm space-y-4">
           <div>
             <h3 className="font-extrabold text-slate-800 dark:text-slate-100 text-lg leading-tight">
               Schedule for {format(selectedDate, 'MMM dd, yyyy')}
@@ -133,7 +134,7 @@ export default function CalendarPage() {
               selectedDateEvents.map((evt, index) => (
                 <div
                   key={index}
-                  className="group bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800/80 p-4 rounded-xl flex items-center justify-between gap-3 hover:border-indigo-500/20 dark:hover:border-indigo-550/20 transition-all duration-150"
+                  className="group bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800/80 p-4 rounded-xl flex items-center justify-between gap-3 hover:border-indigo-500/20 dark:hover:border-indigo-500/20 transition-all duration-150"
                 >
                   <div className="space-y-1.5 flex-1 min-w-0">
                     <span className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase tracking-wide border ${
@@ -165,7 +166,7 @@ export default function CalendarPage() {
                 </div>
               ))
             ) : (
-              <div className="py-8 text-center text-slate-400 dark:text-slate-600">
+              <div className="py-8 text-center text-slate-400 dark:text-slate-650">
                 <CalendarIcon size={32} className="mx-auto opacity-40 mb-3" />
                 <p className="text-sm font-semibold">No milestones scheduled</p>
                 <p className="text-xs max-w-xs mx-auto mt-1 leading-relaxed">

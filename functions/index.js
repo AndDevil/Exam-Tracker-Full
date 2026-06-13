@@ -107,10 +107,11 @@ exports.checkUpcomingExams = onSchedule({
     const usersWithTargetMilestones = new Set();
     const userMilestonesMap = new Map(); // Map to store milestone info per user
 
-    // Helper to process queries
+    // Helper to process queries (limited to 500 documents per run to avoid memory limits)
     const processQuery = async (field, eventName, messageTemplate) => {
       const snapshot = await db.collectionGroup('exams')
         .where(field, '==', targetDateStr)
+        .limit(500)
         .get();
 
       console.log(`Found ${snapshot.size} matches for field "${field}"`);

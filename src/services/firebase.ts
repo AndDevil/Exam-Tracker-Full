@@ -15,13 +15,13 @@ const sanitizeConfigValue = (value: unknown): string => {
 };
 
 const firebaseConfig = {
-  apiKey: sanitizeConfigValue((import.meta as any).env.VITE_FIREBASE_API_KEY),
-  authDomain: sanitizeConfigValue((import.meta as any).env.VITE_FIREBASE_AUTH_DOMAIN),
-  projectId: sanitizeConfigValue((import.meta as any).env.VITE_FIREBASE_PROJECT_ID),
-  storageBucket: sanitizeConfigValue((import.meta as any).env.VITE_FIREBASE_STORAGE_BUCKET),
-  messagingSenderId: sanitizeConfigValue((import.meta as any).env.VITE_FIREBASE_MESSAGING_SENDER_ID),
-  appId: sanitizeConfigValue((import.meta as any).env.VITE_FIREBASE_APP_ID),
-  measurementId: sanitizeConfigValue((import.meta as any).env.VITE_FIREBASE_MEASUREMENT_ID),
+  apiKey: sanitizeConfigValue((import.meta as any).env.VITE_FIREBASE_API_KEY) || "mock-api-key-for-ci",
+  authDomain: sanitizeConfigValue((import.meta as any).env.VITE_FIREBASE_AUTH_DOMAIN) || "mock-auth-domain-for-ci",
+  projectId: sanitizeConfigValue((import.meta as any).env.VITE_FIREBASE_PROJECT_ID) || "exam-tracker-pro-87b3d",
+  storageBucket: sanitizeConfigValue((import.meta as any).env.VITE_FIREBASE_STORAGE_BUCKET) || "mock-storage-bucket-for-ci",
+  messagingSenderId: sanitizeConfigValue((import.meta as any).env.VITE_FIREBASE_MESSAGING_SENDER_ID) || "1234567890",
+  appId: sanitizeConfigValue((import.meta as any).env.VITE_FIREBASE_APP_ID) || "mock-app-id-for-ci",
+  measurementId: sanitizeConfigValue((import.meta as any).env.VITE_FIREBASE_MEASUREMENT_ID) || "mock-measurement-id-for-ci",
 };
 
 // Initialize Firebase App

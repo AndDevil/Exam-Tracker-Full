@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useExams } from '../hooks/useExams';
@@ -14,7 +15,8 @@ import {
   Briefcase, 
   FileText, 
   AlertCircle,
-  RefreshCw
+  RefreshCw,
+  Sparkles
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -22,9 +24,60 @@ export default function ExamDetail() {
   const { user } = useAuth();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { exams, deleteExam, isLoading } = useExams(user?.uid, user?.isDemo);
+  const { exams, deleteExam, updateExam, isLoading } = useExams(user?.uid, user?.isDemo);
 
   const exam = exams.find((e) => e.id === id);
+
+  const [newTaskText, setNewTaskText] = useState('');
+  const studyTasks = exam?.studyTasks || [];
+  const completedTasksCount = studyTasks.filter(t => t.isCompleted).length;
+  const totalTasksCount = studyTasks.length;
+
+  const handleAddTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTaskText.trim() || !id || !exam) return;
+
+    const newTask = {
+      id: crypto.randomUUID(),
+      text: newTaskText.trim(),
+      isCompleted: false
+    };
+
+    const updatedTasks = [...studyTasks, newTask];
+    try {
+      await updateExam({ examId: id, examData: { studyTasks: updatedTasks } });
+      setNewTaskText('');
+      toast.success('Study task added.');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to add study task.');
+    }
+  };
+
+  const toggleTaskCompletion = async (taskId: string) => {
+    if (!id || !exam) return;
+    const updatedTasks = studyTasks.map(t => 
+      t.id === taskId ? { ...t, isCompleted: !t.isCompleted } : t
+    );
+    try {
+      await updateExam({ examId: id, examData: { studyTasks: updatedTasks } });
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to update task.');
+    }
+  };
+
+  const deleteTask = async (taskId: string) => {
+    if (!id || !exam) return;
+    const updatedTasks = studyTasks.filter(t => t.id !== taskId);
+    try {
+      await updateExam({ examId: id, examData: { studyTasks: updatedTasks } });
+      toast.success('Study task removed.');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to delete task.');
+    }
+  };
 
   const handleDelete = async () => {
     if (!exam || !id) return;
@@ -258,6 +311,78 @@ export default function ExamDetail() {
               </p>
             </div>
           )}
+
+          {/* Interactive Study Planner Checklist */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 p-6 rounded-2xl shadow-sm space-y-4">
+            <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center justify-between">
+              <span className="flex items-center space-x-2">
+                <Sparkles size={16} className="text-indigo-500 animate-pulse" />
+                <span>Study Planner Checklist</span>
+              </span>
+              <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 normal-case bg-slate-50 dark:bg-slate-950 px-2 py-1 rounded-md border border-slate-100 dark:border-slate-850">
+                {completedTasksCount} / {totalTasksCount} Completed
+              </span>
+            </h3>
+            
+            {/* Progress Bar */}
+            <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+              <div 
+                className="bg-indigo-650 h-full transition-all duration-300 rounded-full"
+                style={{ width: `${totalTasksCount > 0 ? (completedTasksCount / totalTasksCount) * 100 : 0}%` }}
+              />
+            </div>
+
+            {/* Task list */}
+            {studyTasks.length === 0 ? (
+              <p className="text-xs text-slate-400 dark:text-slate-500 py-2 italic text-center">
+                No tasks created yet. Add topics to revise, mocks to take, or resources to review!
+              </p>
+            ) : (
+              <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
+                {studyTasks.map((task) => (
+                  <div key={task.id} className="flex items-center justify-between group py-1.5 border-b border-slate-50 dark:border-slate-850/50">
+                    <label className="flex items-center space-x-3 cursor-pointer flex-1">
+                      <input 
+                        type="checkbox"
+                        checked={task.isCompleted}
+                        onChange={() => toggleTaskCompletion(task.id)}
+                        className="rounded border-slate-300 dark:border-slate-700 text-indigo-650 focus:ring-indigo-500 h-4.5 w-4.5 cursor-pointer"
+                      />
+                      <span className={`text-sm text-slate-650 dark:text-slate-300 transition-all ${
+                        task.isCompleted ? 'line-through text-slate-400 dark:text-slate-655' : ''
+                      }`}>
+                        {task.text}
+                      </span>
+                    </label>
+                    <button 
+                      onClick={() => deleteTask(task.id)}
+                      className="p-1 hover:bg-red-50 dark:hover:bg-red-950/20 text-slate-400 hover:text-red-500 rounded-md transition-colors cursor-pointer opacity-0 group-hover:opacity-100 focus:opacity-100"
+                      title="Delete study task"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Add new task input */}
+            <form onSubmit={handleAddTask} className="flex items-center gap-2 pt-2">
+              <input 
+                type="text"
+                value={newTaskText}
+                onChange={(e) => setNewTaskText(e.target.value)}
+                placeholder="Add a study task (e.g. Solve Mock Paper 1)"
+                className="flex-1 text-sm bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+              <button 
+                type="submit"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-xl text-xs transition-colors duration-150 cursor-pointer flex items-center space-x-1 shrink-0 h-[38px]"
+              >
+                <span>Add Task</span>
+              </button>
+            </form>
+          </div>
         </div>
 
         {primaryMilestone && primaryCountdown && (

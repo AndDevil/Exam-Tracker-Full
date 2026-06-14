@@ -1,5 +1,11 @@
 export type ExamType = 'Government' | 'Private';
 
+export interface StudyTask {
+  id: string;
+  text: string;
+  isCompleted: boolean;
+}
+
 export interface Exam {
   id?: string;
   name: string;
@@ -18,6 +24,7 @@ export interface Exam {
   isRecurring?: boolean;
   recurrenceRule?: string; // RRule string representation
   recurringParentId?: string; // Original exam instance ID
+  studyTasks?: StudyTask[];
 }
 
 export interface AppUser {

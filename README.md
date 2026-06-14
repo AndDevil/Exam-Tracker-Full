@@ -2,8 +2,25 @@
 
 Exam Tracker Pro is a production-ready, portfolio-worthy Progressive Web App (PWA) built with React, Vite, and Tailwind CSS. Backed by Firebase, it provides a seamless user experience to track application forms, admit card releases, and exam dates.
 
+## 📸 Visual Showcase & Interactive Demo
+
+| ☀️ Desktop Light Mode | 🌙 Desktop Dark Mode |
+| --- | --- |
+| ![Dashboard Light](docs/screenshots/dashboard_light.png) | ![Dashboard Dark](docs/screenshots/dashboard_dark.png) |
+
+| 🔑 Login Landing Page | 📅 PWA Calendar View |
+| --- | --- |
+| ![Login Page](docs/screenshots/login_page.png) | ![Calendar Page](docs/screenshots/calendar_page.png) |
+
+### 🎥 Live App Interaction Demo
+![Live Demo Loop](docs/screenshots/demo.webp)
+
+---
+
 ## 🚀 Key Features
-- **Secure Authentication**: Google Sign-In powered by Firebase Authentication.
+- **Secure Authentication**: Google Sign-In and standard email/password authentication powered by Firebase Authentication.
+- **Guest Sandbox / Live Demo Mode**: Explore the full application (including schedules, details, settings, and checklists) instantly in-browser without logging in, using offline-first local storage drivers.
+- **Study Planning Checklist**: Track your preparation for each exam. Add revision topics, mock tests, and checklist tasks directly inside the exam details screen, complete with a visual progress bar and offline-first persistence.
 - **Real-Time Data Sync**: Firestore real-time snapshots with offline-first local persistence (auto-syncs when reconnecting).
 - **Interactive Calendar**: Event tags showing application deadlines, start dates, admit card releases, and test days.
 - **Smart Countdown Badges**: Color-coded badges indicating upcoming milestones, tomorrow, today, or expired states.
@@ -17,7 +34,20 @@ Exam Tracker Pro is a production-ready, portfolio-worthy Progressive Web App (PW
 - **Frontend**: React, Vite, Tailwind CSS, Lucide Icons, Date-fns, React Calendar, React Router DOM
 - **Validation**: React Hook Form, Zod schema resolver
 - **State Management**: TanStack React Query (server-state & query cache)
-- **Backend & Serverless**: Firebase Auth, Firestore, Cloud Messaging, Hosting, and Cloud Functions (Node.js 18, V2 Scheduled triggers)
+- **Backend & Serverless**: Firebase Auth, Firestore, Cloud Messaging, Hosting, and Cloud Functions (Node.js 22, V2 Scheduled triggers)
+
+---
+
+## ⚡ One-Click Deployment
+
+Deploy the frontend React application instantly to Vercel or Render with one click:
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FAndDevil%2FExam-Tracker-Full)
+&nbsp;&nbsp;&nbsp;&nbsp;
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/AndDevil/Exam-Tracker-Full)
+
+> [!NOTE]
+> When deploying to Vercel or Render, make sure to add your Firebase configuration details as environment variables matching those in `.env.example` so the PWA connects to your database!
 
 ---
 
@@ -195,6 +225,25 @@ match /users/{userId} {
   }
 }
 ```
+
+---
+
+## 📲 PWA Installation & Offline Support
+
+Exam Tracker Pro is a fully compliant Progressive Web App (PWA). Follow these instructions to install the application and configure offline tracking:
+
+### Installation Guides
+- **Google Chrome / Microsoft Edge (Desktop)**:
+  Look for the **install icon** (computer monitor with a downward arrow) in the right side of the address bar, or click **"Install App"** inside the top floating banner on the Dashboard.
+- **Safari (iOS / iPadOS)**:
+  Open the app in Safari, tap the **Share** button (box with upward arrow) at the bottom, scroll down, and tap **"Add to Home Screen"**.
+- **Google Chrome (Android)**:
+  Tap the **"Install App"** banner at the top, or tap the three dots in Chrome's top right corner and select **"Add to Home screen"**.
+
+### PWA Capabilities
+1. **Stand-alone Application Mode**: When launched from the home screen, the app runs in its own window without browser controls, adopting a native layout.
+2. **Offline-First Resilience**: All core code, layout files, styles, fonts, and assets are cached locally via the workbox service worker (`sw.js`).
+3. **Optimistic Database Queue**: Any adds, updates, or deletes made offline are immediately reflected locally in the UI, queued in persistent storage, and synchronized to Firestore the moment internet connectivity returns.
 
 ---
 

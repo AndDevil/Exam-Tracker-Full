@@ -7,6 +7,12 @@ const dateSchema = z.string()
   .nullable()
   .optional();
 
+const studyTaskSchema = z.object({
+  id: z.string(),
+  text: z.string().min(1, 'Task text cannot be empty'),
+  isCompleted: z.boolean()
+});
+
 export const examSchema = z.object({
   name: z.string()
     .min(1, 'Exam name is required')
@@ -26,7 +32,8 @@ export const examSchema = z.object({
   
   // Recurring Support
   isRecurring: z.boolean().optional().default(false),
-  recurrenceRule: z.string().optional().default('')
+  recurrenceRule: z.string().optional().default(''),
+  studyTasks: z.array(studyTaskSchema).optional().default([])
 }).refine((data) => {
   if (data.formStart && data.formEnd && dateRegex.test(data.formStart) && dateRegex.test(data.formEnd)) {
     return new Date(data.formEnd) >= new Date(data.formStart);
@@ -56,6 +63,7 @@ export const importExamsSchema = z.array(
     adUrl: z.string().url('Invalid URL').or(z.literal('')).optional(),
     notes: z.string().max(1000).optional().default(''),
     isRecurring: z.boolean().optional().default(false),
-    recurrenceRule: z.string().optional().default('')
+    recurrenceRule: z.string().optional().default(''),
+    studyTasks: z.array(studyTaskSchema).optional().default([])
   })
 );

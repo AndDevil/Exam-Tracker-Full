@@ -8,6 +8,46 @@ Exam Tracker Pro is a modern, high-performance, portfolio-ready **Progressive We
 
 The project is structured around an offline-first, client-driven PWA architecture supported by Firebase backend services:
 
+```mermaid
+graph TD
+  %% Client / App Layer
+  subgraph Client_App ["Client & Extension Layer"]
+    UI["PWA React App (React 19, Vite, Tailwind v4)"]
+    Ext["Chrome Extension (MV3, Background Alarm)"]
+    DBMock[("LocalStorage (Guest Sandbox DB)")]
+  end
+
+  %% Offline Persistence Layer
+  subgraph Offline_Persistence ["Data Persistence & Cache Layer"]
+    FSCache[("Firestore Local Cache (Persistent Cache)")]
+  end
+
+  %% Serverless / Backend Layer
+  subgraph Backend_Cloud ["Firebase Backend Services (Google Cloud)"]
+    Auth["Firebase Auth (Google OAuth & Email)"]
+    DBRemote[("Cloud Firestore DB (User Document Isolation)")]
+    CF["Firebase Cloud Functions (Scheduled Daily Trigger)"]
+    FCM["Firebase Cloud Messaging (FCM WebPush)"]
+  end
+
+  %% Third Party Services
+  subgraph Third_Party ["External Services"]
+    SMTP["SMTP Email Service (Nodemailer Alert Fallback)"]
+  end
+
+  %% Connections
+  UI -->|Reads/Writes| DBMock
+  UI -->|Reads/Writes| FSCache
+  UI -->|Google Sign-In| Auth
+  FSCache <-->|Real-time Sync & Backoff Retry| DBRemote
+  Ext -->|REST Query / User Storage Auth| DBRemote
+  CF -->|Queries Milestones| DBRemote
+  CF -->|Fires Notifications| FCM
+  CF -->|SMTP Email Fallback| SMTP
+  FCM -->|Sends Alerts| UI
+  SMTP -->|Sends Alerts| UI
+```
+
 ### 1. Frontend & Presentation Layer
 * **React + Vite**: Leverages Vite's blazing-fast bundler and hot module replacement for highly responsive development and highly optimized production builds.
 * **Tailwind CSS (v4)**: Implements a clean, state-of-the-art interface utilizing glassmorphic panels, rich gradient fills, and animations. Dark mode states are managed dynamically via a class-based root toggle.

@@ -38,6 +38,52 @@ Exam Tracker Pro is a production-ready, portfolio-worthy Progressive Web App (PW
 
 ---
 
+## 🏗️ System Architecture
+
+The following diagram details the flow of data, state syncing, and notification scheduling across the Client Layer, Persistence/Offline-Cache Layer, Firebase Cloud Serverless services, and SMTP Fallbacks:
+
+```mermaid
+graph TD
+  %% Client / App Layer
+  subgraph Client_App ["Client & Extension Layer"]
+    UI["PWA React App (React 19, Vite, Tailwind v4)"]
+    Ext["Chrome Extension (MV3, Background Alarm)"]
+    DBMock[("LocalStorage (Guest Sandbox DB)")]
+  end
+
+  %% Offline Persistence Layer
+  subgraph Offline_Persistence ["Data Persistence & Cache Layer"]
+    FSCache[("Firestore Local Cache (Persistent Cache)")]
+  end
+
+  %% Serverless / Backend Layer
+  subgraph Backend_Cloud ["Firebase Backend Services (Google Cloud)"]
+    Auth["Firebase Auth (Google OAuth & Email)"]
+    DBRemote[("Cloud Firestore DB (User Document Isolation)")]
+    CF["Firebase Cloud Functions (Scheduled Daily Trigger)"]
+    FCM["Firebase Cloud Messaging (FCM WebPush)"]
+  end
+
+  %% Third Party Services
+  subgraph Third_Party ["External Services"]
+    SMTP["SMTP Email Service (Nodemailer Alert Fallback)"]
+  end
+
+  %% Connections
+  UI -->|Reads/Writes| DBMock
+  UI -->|Reads/Writes| FSCache
+  UI -->|Google Sign-In| Auth
+  FSCache <-->|Real-time Sync & Backoff Retry| DBRemote
+  Ext -->|REST Query / User Storage Auth| DBRemote
+  CF -->|Queries Milestones| DBRemote
+  CF -->|Fires Notifications| FCM
+  CF -->|SMTP Email Fallback| SMTP
+  FCM -->|Sends Alerts| UI
+  SMTP -->|Sends Alerts| UI
+```
+
+---
+
 ## ⚡ One-Click Deployment
 
 Deploy the frontend React application instantly to Vercel or Render with one click:
